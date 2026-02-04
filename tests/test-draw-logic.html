@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Draw Engine 테스트</title>
+  <style>
+    body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #e0e0e0; padding: 30px; line-height: 1.6; }
+    h1 { color: #FFD700; margin-bottom: 20px; }
+    .pass { color: #44CC44; }
+    .fail { color: #FF4444; font-weight: bold; }
+    .section { margin: 20px 0 8px; font-size: 18px; color: #4488FF; font-weight: bold; }
+    .summary { margin-top: 30px; padding: 16px; border-radius: 8px; font-size: 18px; font-weight: bold; }
+    .summary.all-pass { background: #1B3D1B; color: #44CC44; border: 2px solid #44CC44; }
+    .summary.has-fail { background: #3D1B1B; color: #FF4444; border: 2px solid #FF4444; }
+    pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Draw Engine 테스트</h1>
+  <div id="output"></div>
+
+  <script type="module">
+    import { generateSecureRandom, parseExcludeInput, validateInputs, drawNumbers } from '../js/draw-engine.js';
+
+    const output = document.getElementById('output');
+    let passed = 0;
+    let failed = 0;
+
+    function section(name) {
+      output.innerHTML += `<div class="section">[${name}]</div>`;
+    }
+
+    function assert(condition, label) {
+      if (condition) {
+        passed++;
+        output.innerHTML += `<div class="pass">  ✓ ${label}</div>`;
+      } else {
+        failed++;
+        output.innerHTML += `<div class="fail">  ✗ ${label}</div>`;
+      }
+    }
+
+    // ============================================
+    section('generateSecureRandom');
+    // ============================================
+
+    // 범위 내 숫자 생성 확인
+    let allInRange = true;
+    for (let i = 0; i < 1000; i++) {
+      const r = generateSecureRandom(1, 10);
+      if (r < 1 || r > 10) { allInRange = false; break; }
+    }
+    assert(allInRange, '1~10 범위 내 숫자만 생성 (1000회)');
+
+    // 동일 범위 (min === max)
+    const sameVal = generateSecureRandom(5, 5);
+    assert(sameVal === 5, 'min === max일 때 해당 값 반환');
+
+    // 큰 범위
+    let bigRangeOk = true;
+    for (let i = 0; i < 100; i++) {
+      const r = generateSecureRandom(1, 10000);
+      if (r < 1 || r > 10000) { bigRangeOk = false; break; }
+    }
+    assert(bigRangeOk, '큰 범위(1~10000)에서도 정상 동작');
+
+    // ============================================
+    section('parseExcludeInput');
+    // ============================================
+
+    let s1 = parseExcludeInput('3, 7, 13');
+    assert(s1.has(3) && s1.has(7) && s1.has(13) && s1.size === 3, '"3, 7, 13" 파싱');
+
+    let s2 = parseExcludeInput('');
+    assert(s2.size === 0, '빈 문자열 → 빈 Set');
+
+    let s3 = parseExcludeInput('1, abc, 5, , 3.5');
+    assert(s3.has(1) && s3.has(5) && s3.size === 2, '비정수 무시 ("1, abc, 5, , 3.5")');
+
+    let s4 = parseExcludeInput(null);
+    assert(s4.size === 0, 'null 입력 → 빈 Set');
+
+    // ============================================
+    section('validateInputs');
+    // ============================================
+
+    let v1 = validateInputs(1, 45, 6, new Set());
+    assert(v1.valid === true, '정상 입력 (1~45, 6개)');
+
+    let v2 = validateInputs(10, 5, 3, new Set());
+    assert(v2.valid === false, '시작 > 끝 → 에러');
+
+    let v3 = validateInputs(1, 10, 0, new Set());
+    assert(v3.valid === false, '갯수 0 → 에러');
+
+    let v4 = validateInputs(1, 10, 11, new Set());
+    assert(v4.valid === false, '갯수 > 가용 숫자 → 에러');
+
+    let v5 = validateInputs(1, 10, 8, new Set([2, 4, 6]));
+    assert(v5.valid === false, '제외 후 가용 부족 → 에러 (7개 가용, 8개 요청)');
+
+    let v6 = validateInputs(1, 10, 7, new Set([2, 4, 6]));
+    assert(v6.valid === true, '제외 후 정확히 가용 → 성공 (7개 가용, 7개 요청)');
+
+    let v7 = validateInputs(5, 5, 1, new Set());
+    assert(v7.valid === true, '시작 === 끝, 1개 뽑기 → 성공');
+
+    let v8 = validateInputs(5, 5, 1, new Set([5]));
+    assert(v8.valid === false, '시작 === 끝이고 그 숫자 제외 → 에러');
+
+    // ============================================
+    section('drawNumbers — 기능');
+    // ============================================
+
+    const d1 = drawNumbers(1, 45, 6, new Set());
+    assert(d1.length === 6, '6개 숫자 반환');
+    assert(d1.every(n => n >= 1 && n <= 45), '모든 숫자가 1~45 범위 내');
+    assert(new Set(d1).size === 6, '중복 없음');
+    assert(d1.every((v, i, a) => i === 0 || v >= a[i - 1]), '오름차순 정렬');
+
+    // 제외 숫자 미포함
+    const excl = new Set([1, 2, 3, 4, 5]);
+    let excludeOk = true;
+    for (let i = 0; i < 100; i++) {
+      const r = drawNumbers(1, 10, 5, excl);
+      if (r.some(n => excl.has(n))) { excludeOk = false; break; }
+    }
+    assert(excludeOk, '제외 숫자 미포함 (100회 반복)');
+
+    // 전부 뽑기
+    const d2 = drawNumbers(1, 5, 5, new Set());
+    assert(d2.length === 5 && d2.join(',') === '1,2,3,4,5', '전부 뽑기 (1~5, 5개)');
+
+    // 범위 1개
+    const d3 = drawNumbers(7, 7, 1, new Set());
+    assert(d3.length === 1 && d3[0] === 7, '범위 1개 (7~7, 1개)');
+
+    // 제외 숫자가 범위 밖
+    const d4 = drawNumbers(1, 10, 10, new Set([99, 100]));
+    assert(d4.length === 10, '범위 밖 제외 숫자는 영향 없음');
+
+    // 제외 숫자 0개
+    const d5 = drawNumbers(1, 10, 3, new Set());
+    assert(d5.length === 3, '제외 숫자 0개에서 정상 동작');
+
+    // ============================================
+    section('drawNumbers — 균등 분포 (10,000회)');
+    // ============================================
+
+    const distCounts = {};
+    const distStart = 1, distEnd = 10, distDraw = 1;
+    const iterations = 10000;
+    for (let i = distStart; i <= distEnd; i++) distCounts[i] = 0;
+
+    for (let i = 0; i < iterations; i++) {
+      const r = drawNumbers(distStart, distEnd, distDraw, new Set());
+      distCounts[r[0]]++;
+    }
+
+    const expected = iterations / (distEnd - distStart + 1);
+    const tolerance = 0.15;
+    let distributionOk = true;
+    let distDetail = '';
+    for (let n = distStart; n <= distEnd; n++) {
+      const ratio = distCounts[n] / expected;
+      const mark = (ratio >= (1 - tolerance) && ratio <= (1 + tolerance)) ? '✓' : '✗';
+      if (mark === '✗') distributionOk = false;
+      distDetail += `    ${n}: ${distCounts[n]}회 (${(ratio * 100).toFixed(1)}%) ${mark}\n`;
+    }
+    assert(distributionOk, `1~10 균등 분포 (±${tolerance * 100}% 이내)`);
+    output.innerHTML += `<pre style="color:#888; font-size:13px">${distDetail}</pre>`;
+
+    // ============================================
+    // 결과 요약
+    // ============================================
+
+    const total = passed + failed;
+    const summaryClass = failed === 0 ? 'all-pass' : 'has-fail';
+    output.innerHTML += `<div class="summary ${summaryClass}">결과: ${passed}/${total} 통과${failed > 0 ? `, ${failed}개 실패` : ' — 모두 통과!'}</div>`;
+  </script>
+</body>
+</html>

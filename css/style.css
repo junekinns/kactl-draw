@@ -1,0 +1,318 @@
+/* === CSS Custom Properties === */
+:root {
+  --bg-primary: #111111;
+  --text-primary: #FFFFFF;
+  --text-secondary: #999999;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --error-color: #FF5252;
+  --font-main: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ball-size: clamp(64px, 10vw, 120px);
+  --ball-font-size: clamp(24px, 4.5vw, 52px);
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+/* === Full-screen Layout === */
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === Top Bar === */
+.top-bar {
+  flex-shrink: 0;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.title-main,
+.title-sub {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.input-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.input-row input {
+  font-family: var(--font-main);
+  font-size: 18px;
+  font-weight: 700;
+  width: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-row input:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.input-row input[type="text"] {
+  width: 120px;
+}
+
+.input-row input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.draw-btn {
+  font-family: var(--font-main);
+  font-size: 18px;
+  font-weight: 800;
+  padding: 8px 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #000;
+  background: #FFFFFF;
+  transition: opacity 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.draw-btn:hover:not(:disabled) {
+  opacity: 0.85;
+  transform: scale(1.03);
+}
+
+.draw-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.draw-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.error-message {
+  font-size: 14px;
+  color: var(--error-color);
+  font-weight: 600;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s, opacity 0.3s;
+}
+
+.error-message.visible {
+  max-height: 40px;
+  opacity: 1;
+}
+
+/* === Stage === */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px;
+  min-height: 0;
+}
+
+/* === Lottery Machine === */
+.lottery-machine {
+  width: min(420px, 50vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.5s;
+}
+
+.lottery-machine.hidden {
+  display: none;
+}
+
+.lottery-machine.fade-out {
+  opacity: 0;
+}
+
+.machine-dome {
+  width: 100%;
+  aspect-ratio: 1 / 0.85;
+  background:
+    radial-gradient(ellipse at 50% 40%,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.03) 60%,
+      transparent 100%
+    );
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-bottom: none;
+  border-radius: 50% 50% 0 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.machine-balls {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.machine-ball {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-main);
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    inset 0 -2px 5px rgba(0, 0, 0, 0.3),
+    inset 0 2px 5px rgba(255, 255, 255, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  position: absolute;
+  will-change: transform;
+}
+
+.machine-base {
+  width: 100%;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+
+/* === Result Area === */
+.result-area {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(12px, 2vw, 24px);
+  min-height: var(--ball-size);
+  padding: 16px;
+}
+
+/* === Lotto Ball === */
+.ball {
+  width: var(--ball-size);
+  height: var(--ball-size);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  will-change: transform, opacity;
+  box-shadow:
+    inset 0 -4px 10px rgba(0, 0, 0, 0.35),
+    inset 0 4px 10px rgba(255, 255, 255, 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ball-number {
+  font-family: var(--font-main);
+  font-size: var(--ball-font-size);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+  user-select: none;
+}
+
+/* Ball Colors */
+.ball-red { background: radial-gradient(circle at 35% 30%, #FF6B6B, #E53935 50%, #B71C1C 85%); }
+.ball-orange { background: radial-gradient(circle at 35% 30%, #FFB74D, #FB8C00 50%, #E65100 85%); }
+.ball-yellow { background: radial-gradient(circle at 35% 30%, #FFF176, #FDD835 50%, #F9A825 85%); }
+.ball-yellow .ball-number { color: #333; text-shadow: 0 1px 2px rgba(255,255,255,0.5); }
+.ball-green { background: radial-gradient(circle at 35% 30%, #81C784, #43A047 50%, #1B5E20 85%); }
+.ball-blue { background: radial-gradient(circle at 35% 30%, #64B5F6, #1E88E5 50%, #0D47A1 85%); }
+.ball-purple { background: radial-gradient(circle at 35% 30%, #BA68C8, #8E24AA 50%, #4A148C 85%); }
+.ball-pink { background: radial-gradient(circle at 35% 30%, #F48FB1, #EC407A 50%, #AD1457 85%); }
+
+/* Ball Enter */
+.ball-enter {
+  animation: ball-drop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes ball-drop {
+  0% { transform: scale(0.3) translateY(-50px); opacity: 0; }
+  50% { opacity: 1; }
+  75% { transform: scale(1.08) translateY(3px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Shake */
+.shake { animation: shake 0.4s ease-in-out; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+  75% { transform: translateX(-4px); }
+}
+
+/* Confetti */
+.confetti-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* === Responsive === */
+@media (max-width: 900px) {
+  .top-bar {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .input-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

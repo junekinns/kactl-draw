@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KACTL 제24회 동계심포지엄 경품추첨</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="top-bar">
+      <h1 class="title">
+        <span class="title-main">KACTL 제24회 동계심포지엄</span>
+        <span class="title-sub">경품추첨</span>
+      </h1>
+      <div class="input-row">
+        <label>시작 <input type="number" id="start-number" value="1" min="0"></label>
+        <label>끝 <input type="number" id="end-number" value="45" min="0"></label>
+        <label>갯수 <input type="number" id="draw-count" value="6" min="1"></label>
+        <label>제외 <input type="text" id="exclude-numbers" placeholder="3, 7, 13"></label>
+        <button id="draw-btn" class="draw-btn" type="button">추첨</button>
+      </div>
+      <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
+    </header>
+
+    <main class="stage">
+      <div id="lottery-machine" class="lottery-machine hidden">
+        <div class="machine-dome">
+          <div class="machine-balls" id="machine-balls"></div>
+        </div>
+        <div class="machine-base"></div>
+      </div>
+
+      <div id="result-area" class="result-area"></div>
+    </main>
+  </div>
+
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
