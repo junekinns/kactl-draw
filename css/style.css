@@ -6,8 +6,8 @@
   --border-color: rgba(255, 255, 255, 0.12);
   --error-color: #FF5252;
   --font-main: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-  --ball-size: clamp(64px, 10vw, 120px);
-  --ball-font-size: clamp(24px, 4.5vw, 52px);
+  --ball-size: clamp(80px, 12vw, 150px);
+  --ball-font-size: clamp(30px, 5.5vw, 64px);
 }
 
 *, *::before, *::after {
@@ -164,11 +164,12 @@ body {
 
 /* === Lottery Machine === */
 .lottery-machine {
-  width: min(420px, 50vw);
+  width: min(520px, 60vw);
   display: flex;
   flex-direction: column;
   align-items: center;
   transition: opacity 0.5s;
+  filter: drop-shadow(0 0 30px rgba(100, 140, 255, 0.15));
 }
 
 .lottery-machine.hidden {
@@ -183,16 +184,32 @@ body {
   width: 100%;
   aspect-ratio: 1 / 0.85;
   background:
-    radial-gradient(ellipse at 50% 40%,
-      rgba(255, 255, 255, 0.1),
-      rgba(255, 255, 255, 0.03) 60%,
-      transparent 100%
-    );
-  border: 2px solid rgba(255, 255, 255, 0.15);
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.18), transparent 40%),
+    radial-gradient(ellipse at 70% 25%, rgba(255, 255, 255, 0.08), transparent 35%),
+    radial-gradient(ellipse at 50% 50%, rgba(100, 160, 255, 0.06), transparent 70%),
+    radial-gradient(ellipse at 50% 80%, rgba(0, 0, 0, 0.2), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-bottom: none;
   border-radius: 50% 50% 0 0;
   position: relative;
   overflow: hidden;
+  box-shadow:
+    inset 0 0 60px rgba(100, 160, 255, 0.05),
+    inset 0 -20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.machine-dome::before {
+  content: '';
+  position: absolute;
+  top: 8%;
+  left: 15%;
+  width: 35%;
+  height: 20%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.12), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
 }
 
 .machine-balls {
@@ -211,20 +228,28 @@ body {
   color: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   box-shadow:
-    inset 0 -2px 5px rgba(0, 0, 0, 0.3),
-    inset 0 2px 5px rgba(255, 255, 255, 0.25),
-    0 2px 6px rgba(0, 0, 0, 0.4);
+    inset 0 -3px 6px rgba(0, 0, 0, 0.35),
+    inset 0 3px 6px rgba(255, 255, 255, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.5);
   position: absolute;
   will-change: transform;
 }
 
 .machine-base {
   width: 100%;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-top: none;
-  border-radius: 0 0 12px 12px;
+  height: 40px;
+  background:
+    linear-gradient(180deg,
+      rgba(180, 190, 210, 0.25) 0%,
+      rgba(100, 110, 130, 0.15) 40%,
+      rgba(60, 65, 80, 0.2) 100%
+    );
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 16px 16px;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* === Result Area === */
@@ -249,9 +274,44 @@ body {
   position: relative;
   will-change: transform, opacity;
   box-shadow:
-    inset 0 -4px 10px rgba(0, 0, 0, 0.35),
-    inset 0 4px 10px rgba(255, 255, 255, 0.3),
-    0 6px 20px rgba(0, 0, 0, 0.4);
+    inset 0 -6px 14px rgba(0, 0, 0, 0.4),
+    inset 0 6px 14px rgba(255, 255, 255, 0.2),
+    inset -3px 0 8px rgba(0, 0, 0, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.ball::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 20%;
+  width: 35%;
+  height: 28%;
+  background: radial-gradient(ellipse at center,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.2) 40%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ball::after {
+  content: '';
+  position: absolute;
+  bottom: 8%;
+  right: 15%;
+  width: 20%;
+  height: 12%;
+  background: radial-gradient(ellipse at center,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .ball-number {
@@ -264,15 +324,15 @@ body {
   user-select: none;
 }
 
-/* Ball Colors */
-.ball-red { background: radial-gradient(circle at 35% 30%, #FF6B6B, #E53935 50%, #B71C1C 85%); }
-.ball-orange { background: radial-gradient(circle at 35% 30%, #FFB74D, #FB8C00 50%, #E65100 85%); }
-.ball-yellow { background: radial-gradient(circle at 35% 30%, #FFF176, #FDD835 50%, #F9A825 85%); }
+/* Ball Colors — pseudo-3D gradients */
+.ball-red { background: radial-gradient(circle at 35% 30%, #FF9A9A 0%, #FF6B6B 15%, #E53935 45%, #B71C1C 75%, #7F0000 100%); }
+.ball-orange { background: radial-gradient(circle at 35% 30%, #FFCC80 0%, #FFB74D 15%, #FB8C00 45%, #E65100 75%, #BF360C 100%); }
+.ball-yellow { background: radial-gradient(circle at 35% 30%, #FFFDE7 0%, #FFF176 15%, #FDD835 45%, #F9A825 75%, #F57F17 100%); }
 .ball-yellow .ball-number { color: #333; text-shadow: 0 1px 2px rgba(255,255,255,0.5); }
-.ball-green { background: radial-gradient(circle at 35% 30%, #81C784, #43A047 50%, #1B5E20 85%); }
-.ball-blue { background: radial-gradient(circle at 35% 30%, #64B5F6, #1E88E5 50%, #0D47A1 85%); }
-.ball-purple { background: radial-gradient(circle at 35% 30%, #BA68C8, #8E24AA 50%, #4A148C 85%); }
-.ball-pink { background: radial-gradient(circle at 35% 30%, #F48FB1, #EC407A 50%, #AD1457 85%); }
+.ball-green { background: radial-gradient(circle at 35% 30%, #A5D6A7 0%, #81C784 15%, #43A047 45%, #1B5E20 75%, #003300 100%); }
+.ball-blue { background: radial-gradient(circle at 35% 30%, #90CAF9 0%, #64B5F6 15%, #1E88E5 45%, #0D47A1 75%, #002171 100%); }
+.ball-purple { background: radial-gradient(circle at 35% 30%, #CE93D8 0%, #BA68C8 15%, #8E24AA 45%, #4A148C 75%, #1A0033 100%); }
+.ball-pink { background: radial-gradient(circle at 35% 30%, #F8BBD0 0%, #F48FB1 15%, #EC407A 45%, #AD1457 75%, #6A0032 100%); }
 
 /* Ball Enter */
 .ball-enter {

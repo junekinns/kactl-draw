@@ -76,7 +76,7 @@ function fillMachineWithBalls(start, end, excludeSet) {
   const dome = machineBallsContainer.parentElement;
   const domeW = dome.clientWidth;
   const domeH = dome.clientHeight;
-  const ballSize = Math.max(Math.min(domeW * 0.09, 46), 24);
+  const ballSize = Math.max(Math.min(domeW * 0.11, 56), 30);
 
   displayNums.forEach((num, i) => {
     const ball = document.createElement('div');
@@ -166,7 +166,7 @@ async function runDraw() {
 
   // 2. 섞기 시작 (결과 끝까지 계속)
   const stopMixing = startMixingAnimation();
-  await sleep(4000);
+  await sleep(3000);
 
   // 3. 결과 공들 탕탕탕 (기계는 계속 돌아감)
   for (let i = 0; i < results.length; i++) {
