@@ -1,13 +1,16 @@
 /* === CSS Custom Properties === */
 :root {
-  --bg-primary: #111111;
+  --bg-primary: #0a0a14;
   --text-primary: #FFFFFF;
-  --text-secondary: #999999;
+  --text-secondary: #aaaacc;
   --border-color: rgba(255, 255, 255, 0.12);
   --error-color: #FF5252;
   --font-main: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
   --ball-size: clamp(80px, 12vw, 150px);
   --ball-font-size: clamp(30px, 5.5vw, 64px);
+  --neon-pink: #ff2d95;
+  --neon-cyan: #00e5ff;
+  --neon-gold: #ffd700;
 }
 
 *, *::before, *::after {
@@ -22,7 +25,11 @@ html, body {
 
 body {
   font-family: var(--font-main);
-  background: var(--bg-primary);
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(255, 45, 149, 0.06), transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 229, 255, 0.06), transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(100, 60, 180, 0.08), transparent 60%),
+    var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
 }
@@ -42,8 +49,9 @@ body {
   display: flex;
   align-items: center;
   gap: 32px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 45, 149, 0.15);
   background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 1px 20px rgba(255, 45, 149, 0.05);
 }
 
 .title {
@@ -53,11 +61,27 @@ body {
   flex-shrink: 0;
 }
 
-.title-main,
-.title-sub {
-  font-size: 24px;
+.title-main {
+  font-size: 22px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.title-sub {
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-gold), var(--neon-cyan));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: title-shimmer 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 45, 149, 0.4));
+}
+
+@keyframes title-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .input-row {
@@ -93,7 +117,8 @@ body {
 }
 
 .input-row input:focus {
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(0, 229, 255, 0.5);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.15);
 }
 
 .input-row input[type="text"] {
@@ -111,28 +136,42 @@ body {
   font-family: var(--font-main);
   font-size: 18px;
   font-weight: 800;
-  padding: 8px 32px;
+  padding: 10px 36px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  color: #000;
-  background: #FFFFFF;
-  transition: opacity 0.15s, transform 0.15s;
+  color: #fff;
+  background: linear-gradient(135deg, var(--neon-pink), #cc44ff, var(--neon-cyan));
+  background-size: 200% 200%;
+  animation: btn-glow-bg 3s ease-in-out infinite;
+  box-shadow:
+    0 0 12px rgba(255, 45, 149, 0.3),
+    0 0 24px rgba(255, 45, 149, 0.1);
+  transition: transform 0.15s, box-shadow 0.15s;
   white-space: nowrap;
 }
 
+@keyframes btn-glow-bg {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .draw-btn:hover:not(:disabled) {
-  opacity: 0.85;
-  transform: scale(1.03);
+  transform: scale(1.05);
+  box-shadow:
+    0 0 18px rgba(255, 45, 149, 0.5),
+    0 0 36px rgba(255, 45, 149, 0.2);
 }
 
 .draw-btn:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .draw-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  animation: none;
+  box-shadow: none;
 }
 
 .error-message {
@@ -336,14 +375,29 @@ body {
 
 /* Ball Enter */
 .ball-enter {
-  animation: ball-drop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: ball-drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @keyframes ball-drop {
-  0% { transform: scale(0.3) translateY(-50px); opacity: 0; }
-  50% { opacity: 1; }
+  0% { transform: scale(0.3) translateY(-50px); opacity: 0; filter: brightness(2); }
+  50% { opacity: 1; filter: brightness(1.3); }
   75% { transform: scale(1.08) translateY(3px); }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; filter: brightness(1); }
+}
+
+/* 결과 공 은은한 glow pulse */
+.ball {
+  animation: ball-glow 2.5s ease-in-out infinite;
+  animation-delay: var(--glow-delay, 0s);
+}
+
+@keyframes ball-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.1)); }
+  50% { filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.25)); }
+}
+
+.ball.ball-enter {
+  animation: ball-drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* Shake */

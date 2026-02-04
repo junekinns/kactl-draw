@@ -125,6 +125,7 @@ function startMixingAnimation() {
 async function showResultBall(number, index) {
   const ball = document.createElement('div');
   ball.className = `ball ${getBallColorClass(index)} ball-enter`;
+  ball.style.setProperty('--glow-delay', `${index * 0.3}s`);
 
   const numSpan = document.createElement('span');
   numSpan.className = 'ball-number';
