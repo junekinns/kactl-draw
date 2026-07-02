@@ -15,8 +15,66 @@ const errorMsg = $('#error-message');
 const confettiCanvas = $('#confetti-canvas');
 const lotteryMachine = $('#lottery-machine');
 const machineBallsContainer = $('#machine-balls');
+const titleMain = $('#title-main');
+const titleSub = $('#title-sub');
 
 let isDrawing = false;
+
+/* === 편집 가능한 제목 === */
+const TITLE_STORAGE_KEY = 'kactl-draw-title';
+
+function updateDocumentTitle() {
+  const main = titleMain.textContent.trim();
+  const sub = titleSub.textContent.trim();
+  document.title = [main, sub].filter(Boolean).join(' ') || '경품추첨';
+}
+
+function saveTitle() {
+  try {
+    localStorage.setItem(TITLE_STORAGE_KEY, JSON.stringify({
+      main: titleMain.textContent,
+      sub: titleSub.textContent,
+    }));
+  } catch (e) {
+    /* localStorage 사용 불가 시 무시 */
+  }
+}
+
+function loadTitle() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TITLE_STORAGE_KEY) || 'null');
+    if (saved && typeof saved.main === 'string') titleMain.textContent = saved.main;
+    if (saved && typeof saved.sub === 'string') titleSub.textContent = saved.sub;
+  } catch (e) {
+    /* 손상된 값 무시 */
+  }
+  updateDocumentTitle();
+}
+
+function setupEditableTitle(el) {
+  // 편집 중 Enter는 줄바꿈 대신 편집 종료
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation(); // 제목 편집 중 Enter로 추첨이 실행되지 않도록
+      el.blur();
+    }
+  });
+  el.addEventListener('input', () => {
+    updateDocumentTitle();
+    saveTitle();
+  });
+  // 붙여넣기는 서식 없는 순수 텍스트로
+  el.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+  });
+}
+
+setupEditableTitle(titleMain);
+setupEditableTitle(titleSub);
+loadTitle();
 
 const BALL_COLORS = [
   'ball-red', 'ball-orange', 'ball-yellow', 'ball-green',

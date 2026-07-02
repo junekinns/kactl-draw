@@ -67,6 +67,36 @@ body {
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* === 편집 가능한 제목 === */
+.title-main,
+.title-sub {
+  outline: none;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  cursor: text;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.title-main:hover,
+.title-sub:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.title-main:focus,
+.title-sub:focus {
+  background: rgba(0, 229, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.4);
+}
+
+/* 내용이 비었을 때 안내 문구 */
+.title-main:empty::before,
+.title-sub:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
 .title-sub {
   font-size: 28px;
   font-weight: 900;
