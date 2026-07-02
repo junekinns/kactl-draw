@@ -2,7 +2,7 @@
 
 import { validateInputs, parseExcludeInput, drawNumbers, generateSecureRandom } from './draw-engine.js';
 import { launchConfetti } from './confetti.js';
-import { prepareSound, startDrumRoll, playResultPing, playFinalCymbal } from './sound-effects.js';
+import { prepareSound, playSlotMachineCue } from './sound-effects.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -231,8 +231,6 @@ function startMixingAnimation() {
 }
 
 async function showResultBall(number, index, delayMs = 250) {
-  playResultPing(index);
-
   const ball = document.createElement('div');
   ball.className = `ball ${getBallColorClass(index)} ball-enter`;
   ball.style.setProperty('--glow-delay', `${index * 0.3}s`);
@@ -280,31 +278,33 @@ async function runDraw() {
   // 1. 추첨기 표시 & 공 채우기
   lotteryMachine.classList.remove('hidden');
   lotteryMachine.classList.remove('fade-out');
+  lotteryMachine.classList.remove('spinning');
+  lotteryMachine.classList.remove('revealing');
   await sleep(100);
   fillMachineWithBalls(start, end, excludeSet);
 
   // 2. 9초 동안 슬롯머신처럼 섞기
+  await playSlotMachineCue();
+  lotteryMachine.classList.add('spinning');
   const stopMixing = startMixingAnimation();
-  const stopDrumRoll = startDrumRoll();
   await sleep(DRUM_ROLL_DURATION_MS);
-  stopDrumRoll();
 
   // 3. 9~10초 사이에 결과 표시
+  lotteryMachine.classList.remove('spinning');
+  lotteryMachine.classList.add('revealing');
   const resultDelay = RESULT_REVEAL_DURATION_MS / Math.max(results.length, 1);
   for (let i = 0; i < results.length; i++) {
     await showResultBall(results[i], i, resultDelay);
   }
 
-  // 4. 10초 지점에 심벌즈
-  playFinalCymbal();
-
-  // 5. 결과 다 나오면 멈추고 페이드아웃
+  // 4. 10초 지점의 짜잔에 맞춰 멈추고 페이드아웃
+  lotteryMachine.classList.remove('revealing');
   stopMixing();
   lotteryMachine.classList.add('fade-out');
   await sleep(MACHINE_FADE_OUT_MS);
   lotteryMachine.classList.add('hidden');
 
-  // 6. 축하
+  // 5. 축하
   launchConfetti(confettiCanvas);
 
   isDrawing = false;
@@ -315,6 +315,7 @@ async function runDraw() {
 
 drawnHistory = loadDrawnHistory();
 
+drawBtn.addEventListener('pointerdown', prepareSound);
 drawBtn.addEventListener('click', runDraw);
 resetHistoryBtn.addEventListener('click', () => {
   if (isDrawing) return;
