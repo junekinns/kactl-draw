@@ -2,7 +2,7 @@
 
 import { validateInputs, parseExcludeInput, drawNumbers, generateSecureRandom } from './draw-engine.js';
 import { launchConfetti } from './confetti.js';
-import { prepareSound, startDrumRoll, playResultPing, playFinalFanfare } from './sound-effects.js';
+import { prepareSound, startDrumRoll, playResultPing, playFinalCymbal } from './sound-effects.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -290,7 +290,7 @@ async function runDraw() {
   for (let i = 0; i < results.length; i++) {
     await showResultBall(results[i], i);
   }
-  playFinalFanfare();
+  playFinalCymbal();
 
   // 4. 결과 다 나오면 멈추고 페이드아웃
   stopMixing();
