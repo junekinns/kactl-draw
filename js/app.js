@@ -10,6 +10,7 @@ const endInput = $('#end-number');
 const countInput = $('#draw-count');
 const excludeInput = $('#exclude-numbers');
 const drawBtn = $('#draw-btn');
+const resetHistoryBtn = $('#reset-history-btn');
 const resultArea = $('#result-area');
 const errorMsg = $('#error-message');
 const confettiCanvas = $('#confetti-canvas');
@@ -19,6 +20,9 @@ const titleMain = $('#title-main');
 const titleSub = $('#title-sub');
 
 let isDrawing = false;
+let drawnHistory = new Set();
+
+const DRAWN_HISTORY_STORAGE_KEY = 'kactl-draw-drawn-history';
 
 /* === 편집 가능한 제목 === */
 const TITLE_STORAGE_KEY = 'kactl-draw-title';
@@ -98,13 +102,55 @@ function getBallColorClass(index) {
 function showError(msg) {
   errorMsg.textContent = msg;
   errorMsg.classList.add('visible');
+  errorMsg.classList.remove('info');
   errorMsg.classList.add('shake');
   setTimeout(() => errorMsg.classList.remove('shake'), 500);
+}
+
+function showInfo(msg) {
+  errorMsg.textContent = msg;
+  errorMsg.classList.add('visible');
+  errorMsg.classList.add('info');
 }
 
 function clearError() {
   errorMsg.textContent = '';
   errorMsg.classList.remove('visible');
+  errorMsg.classList.remove('info');
+}
+
+function loadDrawnHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DRAWN_HISTORY_STORAGE_KEY) || '[]');
+    if (!Array.isArray(saved)) return new Set();
+    return new Set(saved.filter(Number.isInteger));
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function saveDrawnHistory() {
+  try {
+    const sortedHistory = [...drawnHistory].sort((a, b) => a - b);
+    localStorage.setItem(DRAWN_HISTORY_STORAGE_KEY, JSON.stringify(sortedHistory));
+  } catch (e) {
+    /* localStorage 사용 불가 시 이번 화면 세션에서만 유지 */
+  }
+}
+
+function getCombinedExcludeSet(manualExcludeSet) {
+  return new Set([...manualExcludeSet, ...drawnHistory]);
+}
+
+function addResultsToHistory(results) {
+  results.forEach((num) => drawnHistory.add(num));
+  saveDrawnHistory();
+}
+
+function resetDrawnHistory() {
+  drawnHistory.clear();
+  saveDrawnHistory();
+  showInfo('저장된 추첨 기록을 초기화했습니다. 이전에 나온 숫자도 다시 나올 수 있습니다.');
 }
 
 function sleep(ms) {
@@ -202,20 +248,27 @@ async function runDraw() {
   const start = parseInt(startInput.value, 10);
   const end = parseInt(endInput.value, 10);
   const count = parseInt(countInput.value, 10);
-  const excludeSet = parseExcludeInput(excludeInput.value);
+  const manualExcludeSet = parseExcludeInput(excludeInput.value);
+  const excludeSet = getCombinedExcludeSet(manualExcludeSet);
 
   const validation = validateInputs(start, end, count, excludeSet);
   if (!validation.valid) {
-    showError(validation.error);
+    const resetWouldHelp = validateInputs(start, end, count, manualExcludeSet).valid;
+    const resetHint = resetWouldHelp
+      ? ' 저장된 추첨 기록을 초기화하면 이전 숫자를 다시 뽑을 수 있습니다.'
+      : '';
+    showError(validation.error + resetHint);
     return;
   }
 
   isDrawing = true;
   drawBtn.disabled = true;
+  resetHistoryBtn.disabled = true;
   drawBtn.textContent = '추첨 중...';
   resultArea.innerHTML = '';
 
   const results = drawNumbers(start, end, count, excludeSet);
+  addResultsToHistory(results);
 
   // 1. 추첨기 표시 & 공 채우기
   lotteryMachine.classList.remove('hidden');
@@ -243,12 +296,20 @@ async function runDraw() {
 
   isDrawing = false;
   drawBtn.disabled = false;
+  resetHistoryBtn.disabled = false;
   drawBtn.textContent = '추첨';
 }
 
+drawnHistory = loadDrawnHistory();
+
 drawBtn.addEventListener('click', runDraw);
+resetHistoryBtn.addEventListener('click', () => {
+  if (isDrawing) return;
+  resetDrawnHistory();
+});
 
 document.addEventListener('keydown', (e) => {
+  if (e.target === resetHistoryBtn) return;
   if (e.key === 'Enter' && !isDrawing) {
     runDraw();
   }
