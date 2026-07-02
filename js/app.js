@@ -24,6 +24,9 @@ let isDrawing = false;
 let drawnHistory = new Set();
 
 const DRAWN_HISTORY_STORAGE_KEY = 'kactl-draw-drawn-history';
+const DRUM_ROLL_DURATION_MS = 9000;
+const RESULT_REVEAL_DURATION_MS = 1000;
+const MACHINE_FADE_OUT_MS = 500;
 
 /* === 편집 가능한 제목 === */
 const TITLE_STORAGE_KEY = 'kactl-draw-title';
@@ -227,7 +230,7 @@ function startMixingAnimation() {
   return () => { running = false; };
 }
 
-async function showResultBall(number, index) {
+async function showResultBall(number, index, delayMs = 250) {
   playResultPing(index);
 
   const ball = document.createElement('div');
@@ -240,7 +243,7 @@ async function showResultBall(number, index) {
   ball.appendChild(numSpan);
 
   resultArea.appendChild(ball);
-  await sleep(250);
+  await sleep(delayMs);
 }
 
 async function runDraw() {
@@ -280,25 +283,28 @@ async function runDraw() {
   await sleep(100);
   fillMachineWithBalls(start, end, excludeSet);
 
-  // 2. 섞기 시작 (결과 끝까지 계속)
+  // 2. 9초 동안 슬롯머신처럼 섞기
   const stopMixing = startMixingAnimation();
   const stopDrumRoll = startDrumRoll();
-  await sleep(3000);
+  await sleep(DRUM_ROLL_DURATION_MS);
   stopDrumRoll();
 
-  // 3. 결과 공들 탕탕탕 (기계는 계속 돌아감)
+  // 3. 9~10초 사이에 결과 표시
+  const resultDelay = RESULT_REVEAL_DURATION_MS / Math.max(results.length, 1);
   for (let i = 0; i < results.length; i++) {
-    await showResultBall(results[i], i);
+    await showResultBall(results[i], i, resultDelay);
   }
+
+  // 4. 10초 지점에 심벌즈
   playFinalCymbal();
 
-  // 4. 결과 다 나오면 멈추고 페이드아웃
+  // 5. 결과 다 나오면 멈추고 페이드아웃
   stopMixing();
   lotteryMachine.classList.add('fade-out');
-  await sleep(500);
+  await sleep(MACHINE_FADE_OUT_MS);
   lotteryMachine.classList.add('hidden');
 
-  // 5. 축하
+  // 6. 축하
   launchConfetti(confettiCanvas);
 
   isDrawing = false;
