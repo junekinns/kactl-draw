@@ -2,6 +2,7 @@
 
 import { validateInputs, parseExcludeInput, drawNumbers, generateSecureRandom } from './draw-engine.js';
 import { launchConfetti } from './confetti.js';
+import { prepareSound, startDrumRoll, playResultPing, playFinalFanfare } from './sound-effects.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -227,6 +228,8 @@ function startMixingAnimation() {
 }
 
 async function showResultBall(number, index) {
+  playResultPing(index);
+
   const ball = document.createElement('div');
   ball.className = `ball ${getBallColorClass(index)} ball-enter`;
   ball.style.setProperty('--glow-delay', `${index * 0.3}s`);
@@ -262,6 +265,7 @@ async function runDraw() {
   }
 
   isDrawing = true;
+  prepareSound();
   drawBtn.disabled = true;
   resetHistoryBtn.disabled = true;
   drawBtn.textContent = '추첨 중...';
@@ -278,12 +282,15 @@ async function runDraw() {
 
   // 2. 섞기 시작 (결과 끝까지 계속)
   const stopMixing = startMixingAnimation();
+  const stopDrumRoll = startDrumRoll();
   await sleep(3000);
+  stopDrumRoll();
 
   // 3. 결과 공들 탕탕탕 (기계는 계속 돌아감)
   for (let i = 0; i < results.length; i++) {
     await showResultBall(results[i], i);
   }
+  playFinalFanfare();
 
   // 4. 결과 다 나오면 멈추고 페이드아웃
   stopMixing();
